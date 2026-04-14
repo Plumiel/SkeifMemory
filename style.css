@@ -1,0 +1,212 @@
+* {
+    box-sizing: border-box; 
+}
+
+/* Revise later (when extracting the snippet) */
+
+body {
+    font-family: 'Arial', sans-serif; 
+    background: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.game-info {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+
+/* Game board "grounds"*/
+.game-grounds {
+    background: #f9ecde;
+    padding: 35px;
+    border: 3px solid #b09670;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+
+    cursor: url('Pieces/CursorPaw.png'), auto; 
+}
+
+
+/* Pieces grid */
+.memory-game { 
+    display: grid;
+    grid-template-columns: repeat(6, 65px); 
+    grid-gap: 20px; 
+    perspective: 1000px;
+}
+
+.tile { 
+    width: 65px;
+    height: 65px;
+    position: relative;
+    transform-style: preserve-3d; 
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1; 
+}
+
+
+.tile:not(.flip):hover .tile-back {
+    filter: drop-shadow(0 0 5px #b26229); 
+    box-shadow: none;
+    border-radius: 8px;
+    transform: scale(1.05); 
+    transition: all 0.2s ease;
+    z-index: 100;
+}
+
+.tile-front, .tile-back { 
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+    backface-visibility: hidden; 
+    -webkit-backface-visibility: hidden; 
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none; 
+    border-radius: 8px;
+    transform-style: preserve-3d; 
+    background-color: transparent !important; 
+}
+
+.tile.flip {
+    transform: rotateY(180deg);
+}
+
+.tile-front {
+    background-color: transparent; 
+    transform: rotateY(180deg);
+}
+
+.tile-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    pointer-events: none;
+    z-index: 1; 
+}
+
+.symbol-img {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateZ(1px); 
+    width: 80%; 
+    height: 80%;
+    object-fit: contain; 
+    pointer-events: none;
+    z-index: 10; 
+}
+
+.matched {
+    visibility: hidden;
+}
+
+
+/* Score zones */
+.score-zone {
+    width: 140px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.collection-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 48px);
+    grid-auto-rows: 48px;
+    gap: 10px;
+    width: 106px;
+    height: 222px; 
+    overflow: hidden;
+    background-image: url("data:image/svg+xml,%3Csvg width='58' height='58' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='1' y='1' width='46' height='46' fill='none' stroke='%23b09670' stroke-width='2' stroke-dasharray='5,3' rx='6'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-position: 0 0;
+}
+
+.collection-tile {
+    width: 48px;
+    height: 48px;
+
+    position: relative;
+
+    background: transparent; 
+    border: none; 
+    border-radius: 6px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    place-self: center; 
+
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}
+
+.collection-tile .symbol-img {
+    width: 70%; 
+    height: 70%;
+}
+
+#aya-collection {
+    transform: translateY(-50px);
+}
+
+#player-collection {
+    transform: translateY(50px);
+}
+
+/* Mobile solution... (kind of) */
+@media (max-width: 768px) {
+    .game-grounds {
+        padding: 40px 15px;
+        flex-direction: column; 
+        gap: 60px;
+    }
+    .memory-game { 
+        grid-template-columns: repeat(6, 50px); 
+        grid-gap: 15px; 
+        justify-content: center;
+    }
+
+    .tile { 
+        width: 50px;
+        height: 50px;
+    }
+    .collection-grid {
+        grid-auto-rows: 48px;
+        width: 222px; 
+        height: 106px; 
+        background-repeat: repeat;
+    }
+
+    #aya-collection, #player-collection {
+        transform: none; 
+        width: 100%;
+    }
+
+
+}
+

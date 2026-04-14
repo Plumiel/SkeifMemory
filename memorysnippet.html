@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Match vs Adversary</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="game-info">
+        <h1>Skeif Memory Game</h1>
+        <div id="turn-indicator">Your Turn!</div>
+        <!-- <div class="buffer-status" id="buffer-display">AI Memory: [Empty]</div> -->
+    </div>
+
+    <div class="game-grounds">
+            <div class="score-zone" id="aya-collection">
+                <div class="collection-grid" id="aya-tiles"></div>
+            </div>
+
+            <div class="memory-game" id="game-board"></div>
+
+            <div class="score-zone" id="player-collection">
+                <div class="collection-grid" id="player-tiles"></div>
+            </div>
+    </div>
+
+    <script src="GameLogic.js"></script>
+</body>
+</html>
