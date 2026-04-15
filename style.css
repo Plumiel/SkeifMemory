@@ -151,7 +151,7 @@ body {
     grid-auto-rows: 48px;
     gap: 10px;
     width: 106px;
-    height: 222px; 
+    height: 280px; 
     overflow: hidden;
     background-image: url("data:image/svg+xml,%3Csvg width='58' height='58' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='1' y='1' width='46' height='46' fill='none' stroke='%23b09670' stroke-width='2' stroke-dasharray='5,3' rx='6'/%3E%3C/svg%3E");
     background-repeat: repeat;
@@ -188,11 +188,11 @@ body {
 }
 
 #aya-collection {
-    transform: translateY(-50px);
+    transform: translateY(-40px);
 }
 
 #player-collection {
-    transform: translateY(50px);
+    transform: translateY(40px);
 }
 
 /* Mobile solution... (kind of) */
