@@ -34,7 +34,7 @@ body {
     justify-content: center;
     gap: 40px;
 
-    cursor: url('Pieces/CursorPaw.png'), auto; 
+    cursor: url('Pieces/CursorPaw.png') 25 25, auto; 
 }
 
 .game-grounds::before{

@@ -14,6 +14,8 @@ let deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
 let boardData = deck.map((symbol, id) => ({ id, symbol, state: 0 }));
 
 let buffer = []; 
+const bufferLimit = 6; //Change this to increase or decrease buffer... CHANGE CHANCE LOGIC TO ADAPT IT.
+
 let firstTile = null; //First pick.
 let isPlayerTurn = true; //If false, it's Aya's turn
 let lockBoard = false;
@@ -81,7 +83,7 @@ function flip(id) {
 function updateBuffer(id, symbol) {
     if (!buffer.find(i => i.id == id)) {
         buffer.unshift({ id, symbol });
-        if (buffer.length > 6) buffer.pop();
+        if (buffer.length > bufferLimit) buffer.pop();
     }
     viewBuffer();
 }
@@ -106,6 +108,7 @@ function checkMatch(secondTile) {
             collectTile(first.symbol, winnerZoneId);
 
             buffer = buffer.filter(c => c.symbol !== first.symbol);
+            buffer.pop(); //Maybe?¿?¿?¿?¿?¿?¿?¿?¿ I should add buffer position tracking to the debugger.
             if (isPlayerTurn) { playerScore++; } else { ayaScore++; }
             nextTurn();
         }, 1000);
@@ -147,6 +150,7 @@ function ayaTurn() {
         const randomPicks = boardData.filter(c => c.state == 0).map(c => c.id);
         const firstPick = randomPicks[Math.floor(Math.random() * randomPicks.length)];
         ayaFlip(firstPick); //No match in buffer, she picks at random.
+        console.log(`--Aya picked a random first!`);
 
         setTimeout(() => {
 
@@ -157,6 +161,7 @@ function ayaTurn() {
                 ayaFlip(secondMatch.idB);
             } else {
                 pickRandomSecond(firstPick);
+                console.log(`--Aya picked a random second!`);
             }
                 
         }, 1000);
@@ -165,17 +170,23 @@ function ayaTurn() {
 
 function scoutBuffer(){
     let idA, idB = null; 
-    let farthest = 0;
+    let closest, farthest = 0;
     let chance = Math.floor(Math.random() * 101);
     for (let i = 0; i < buffer.length; i++) {
         for (let j = i + 1; j < buffer.length; j++) {
-            if (buffer[i].symbol === buffer[j].symbol) {
+            if (buffer[i].symbol === buffer[j].symbol && buffer[i].id !== buffer[j].id) {
                 idA = buffer[i].id;
                 idB = buffer[j].id;
                 farthest = j;
+                closest = i;
             }
         }
     }
+
+    if(closest > 0 ){
+        chance = chance + 20; //Reduces the chances to match if the tile wasn't just picked. 
+        console.log(`-- Reduced!`)
+    } 
     if(idA != null && idB != null){
         console.log(`(Chance: ${chance} | Farthest: ${farthest} | Result: ${100 - (farthest * 15)})`);
         if(chance <= 100 - (farthest * 15)){ //Ex. If it's on position 5 -> 100 - (5*15) = 25% chance 
