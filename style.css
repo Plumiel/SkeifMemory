@@ -23,6 +23,7 @@ body {
 
 /* Game board "grounds"*/
 .game-grounds {
+    position: relative;
     background: #f9ecde;
     padding: 35px;
     border: 3px solid #b09670;
@@ -40,10 +41,10 @@ body {
 .game-grounds::before{
     content: "";
     position: absolute;
-    top: 5vw;
-    left: 50vw;
-    width: 30%;
-    height: 30%;
+    top: -200px;
+    left: -400px;
+    width: 70%;
+    height: 70%;
     background: rgba(255, 255, 255, 0);
     border-radius: 12px;
     pointer-events: none;
@@ -151,7 +152,7 @@ body {
     grid-auto-rows: 48px;
     gap: 10px;
     width: 106px;
-    height: 280px; 
+    height: 338px; 
     overflow: hidden;
     background-image: url("data:image/svg+xml,%3Csvg width='58' height='58' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='1' y='1' width='46' height='46' fill='none' stroke='%23b09670' stroke-width='2' stroke-dasharray='5,3' rx='6'/%3E%3C/svg%3E");
     background-repeat: repeat;
@@ -186,15 +187,6 @@ body {
     width: 70%; 
     height: 70%;
 }
-
-#aya-collection {
-    transform: translateY(-40px);
-}
-
-#player-collection {
-    transform: translateY(40px);
-}
-
 /* Mobile solution... (kind of) */
 @media (max-width: 768px) {
     .game-grounds {

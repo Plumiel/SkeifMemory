@@ -21,6 +21,7 @@ let isPlayerTurn = true; //If false, it's Aya's turn
 let lockBoard = false;
 let playerScore = 0; //1 pair -> 1 score... I don't think I'll need an array.
 let ayaScore = 0;
+let turnCounter = 0;
 
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('turn-indicator');
@@ -140,8 +141,12 @@ function nextTurn(gotPair) {
         return;
     }
     firstTile = null;
-    if (!gotPair){
+    if (gotPair && turnCounter < 1) { 
+        turnCounter++;
+        console.log(`--Increasing turn counter! (${turnCounter})`);
+    }else{
         isPlayerTurn = !isPlayerTurn;
+        turnCounter = 0;
     }
     lockBoard = false;
     statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
