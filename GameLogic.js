@@ -26,6 +26,11 @@ const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('turn-indicator');
 const memoryElement = document.getElementById('buffer-display'); //debug, kill this
 
+
+function startGame() {
+    createBoard();
+    pickFirstTurn();
+}
 function createBoard() {
     boardElement.innerHTML = '';
     boardData.forEach(tile => {
@@ -45,6 +50,12 @@ function createBoard() {
             </div>`;
         boardElement.appendChild(tileDiv);
     });
+}
+
+function pickFirstTurn() {
+    isPlayerTurn = Math.random() < 0.5;
+    statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya goes first!";
+    if (!isPlayerTurn) setTimeout(ayaTurn, 1000);
 }
 
 function collectTile(symbol, zoneId) {
@@ -216,4 +227,4 @@ function ayaFlip(id) {
     }
 }
 
-createBoard();
+startGame();
