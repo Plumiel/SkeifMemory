@@ -121,7 +121,7 @@ function checkMatch(secondTile) {
             buffer = buffer.filter(c => c.symbol !== first.symbol);
             buffer.pop(); //Maybe?¿?¿?¿?¿?¿?¿?¿?¿ I should add buffer position tracking to the debugger.
             if (isPlayerTurn) { playerScore++; } else { ayaScore++; }
-            nextTurn();
+            nextTurn(true);
         }, 1000);
     } else {
         setTimeout(() => {
@@ -129,18 +129,20 @@ function checkMatch(secondTile) {
             document.querySelector(`[data-id="${secondTile}"]`).classList.remove('flip');
             first.state = 0;
             second.state = 0;
-            nextTurn();
+            nextTurn(false);
         }, 1500);
     }
 }
 
-function nextTurn() {
+function nextTurn(gotPair) {
     if (boardData.every(c => c.state === 2)) {
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
         return;
     }
     firstTile = null;
-    isPlayerTurn = !isPlayerTurn;
+    if (!gotPair){
+        isPlayerTurn = !isPlayerTurn;
+    }
     lockBoard = false;
     statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
     if (!isPlayerTurn) setTimeout(ayaTurn, 1000);
