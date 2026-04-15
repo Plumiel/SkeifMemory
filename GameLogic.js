@@ -22,7 +22,7 @@ let ayaScore = 0;
 
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('turn-indicator');
-//const memoryElement = document.getElementById('buffer-display'); //debug, kill this
+const memoryElement = document.getElementById('buffer-display'); //debug, kill this
 
 function createBoard() {
     boardElement.innerHTML = '';
@@ -81,14 +81,14 @@ function flip(id) {
 function updateBuffer(id, symbol) {
     if (!buffer.find(i => i.id == id)) {
         buffer.unshift({ id, symbol });
-        if (buffer.length > 4) buffer.pop();
+        if (buffer.length > 6) buffer.pop();
     }
-    //viewBuffer();
+    viewBuffer();
 }
 
-/*function viewBuffer() {
+function viewBuffer() {
     memoryElement.innerText = `Memory: ${buffer.map(i => `${i.symbol} (#${i.id})`).join(' | ')}`;
-}*/
+}
 
 function checkMatch(secondTile) {
     lockBoard = true;
@@ -138,10 +138,9 @@ function ayaTurn() {
     if (isPlayerTurn) return;
 
     const matchInBuffer = scoutBuffer();
-    
-    //This checks if buffer has match -- it means Aya selected one, failed, then the player piqued the missing piece.
-    let chance = Math.floor(Math.random() * 101);
-    if (matchInBuffer != null && chance <= 50) { //50% she remembers it!
+
+    //Complete roll
+    if (matchInBuffer != null) { 
         ayaFlip(matchInBuffer.idA);
         setTimeout(() => ayaFlip(matchInBuffer.idB), 800);
     } else {
@@ -153,42 +152,39 @@ function ayaTurn() {
 
             if (lockBoard) return;
 
-            //After the first pick, she checks the buffer again. 
-            const isSymbolThere = boardData[firstPick].symbol;
-            const bufferIndex = buffer.findIndex(c => c.symbol === isSymbolThere && c.id !== firstPick);
-
-            if (bufferIndex !== -1) {
-                if (bufferIndex == 1) {
-                    //If the picked tile is the last flip by player...
-                    ayaFlip(buffer[bufferIndex].id);
-                } else {
-                    //Symbol is at 3 or 4, which makes it harder for her to remember.
-                    let percentage = Math.floor(Math.random() * 101);
-                    if (percentage <= 25) {
-                        ayaFlip(buffer[bufferIndex].id);
-                    } else {
-                        buffer.pop(); // Machine loses the old memories 11!!!!!!!!! Loookike
-                        buffer.pop(); // try splice later
-                        pickRandomSecond(firstPick);
-                    }
-                }
+            const secondMatch = scoutBuffer();
+            if (secondMatch != null && secondMatch.idA == firstPick) {
+                ayaFlip(secondMatch.idB);
             } else {
                 pickRandomSecond(firstPick);
             }
+                
         }, 1000);
     }
 }
 
-function scoutBuffer() {
+function scoutBuffer(){
+    let idA, idB = null; 
+    let farthest = 0;
+    let chance = Math.floor(Math.random() * 101);
     for (let i = 0; i < buffer.length; i++) {
         for (let j = i + 1; j < buffer.length; j++) {
             if (buffer[i].symbol === buffer[j].symbol) {
-                return { idA: buffer[i].id, 
-                            idB: buffer[j].id };
+                idA = buffer[i].id;
+                idB = buffer[j].id;
+                farthest = j;
             }
         }
     }
-    return null;
+    if(idA != null && idB != null){
+        console.log(`(Chance: ${chance} | Farthest: ${farthest} | Result: ${100 - (farthest * 15)})`);
+        if(chance <= 100 - (farthest * 15)){ //Ex. If it's on position 5 -> 100 - (5*15) = 25% chance 
+            console.log(`-- Did it!`);
+            return { idA, idB };
+        }
+    }else{
+        return null;
+    }
 }
 
 function pickRandomSecond(excludeId) {
