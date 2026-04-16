@@ -10,6 +10,7 @@ const icons = [
     'EyeOutline.png', 'EyeBlack.png', 'EyeRed.png',
     'EggOutline.png', 'EggBlack.png', 'EggRed.png'
 ];
+
 let deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
 let boardData = deck.map((symbol, id) => ({ id, symbol, state: 0 }));
 
@@ -26,12 +27,35 @@ let turnCounter = 0;
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('turn-indicator');
 const memoryElement = document.getElementById('buffer-display'); //debug, kill this
+const menuElement = document.getElementById('menu-zone');
+const turnIndicator = document.getElementById('turn-indicator');
+const rewardIndicator = document.getElementById('reward-indicator');
+const collectionElement = document.querySelectorAll('.collection-grid');
 
 
 function startGame() {
+    //Maybe some logic to lock into the game?
+    menuElement.classList.add('hidden');
+    collectionElement.forEach(c => c.style.visibility = 'visible');
+    turnIndicator.style.display = 'block';
     createBoard();
     pickFirstTurn();
 }
+
+function rewardRoll(){
+    //Reward Logic goes here
+    let reward_name = "a kiss on the forehead";
+    //--
+    if(playerScore > ayaScore){
+        rewardIndicator.innerText = `You got: ${reward_name}`;
+    }else if(playerScore == ayaScore){
+        rewardIndicator.innerText = `You got: ${reward_name}`;
+    }
+    rewardIndicator.style.display = 'block';
+
+    return;
+}
+
 function createBoard() {
     boardElement.innerHTML = '';
     boardData.forEach(tile => {
@@ -138,6 +162,7 @@ function checkMatch(secondTile) {
 function nextTurn(gotPair) {
     if (boardData.every(c => c.state === 2)) {
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
+        rewardRoll();
         return;
     }
     firstTile = null;
@@ -234,4 +259,4 @@ function ayaFlip(id) {
     }
 }
 
-startGame();
+//startGame();
