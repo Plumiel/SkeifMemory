@@ -44,7 +44,7 @@ function startGame() {
 
 function rewardRoll(){
     //Reward Logic goes here
-    let reward_name = "a kiss on the forehead";
+    let reward_name = "five thousand lost eggs";
     //--
     if(playerScore > ayaScore){
         rewardIndicator.innerText = `You got: ${reward_name}`;
