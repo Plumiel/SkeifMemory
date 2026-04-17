@@ -11,17 +11,21 @@ const icons = [
     'EggOutline.png', 'EggBlack.png', 'EggRed.png'
 ];
 
-let deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
-let boardData = deck.map((symbol, id) => ({ id, symbol, state: 0 }));
+let savedBoard = JSON.parse(localStorage.getItem('memory_boardData'));
+let deck = savedBoard ? [] : [...icons, ...icons].sort(() => Math.random() - 0.5);
+let boardData = savedBoard || deck.map((symbol, id) => ({ id, symbol, state: 0 }));
 
-let buffer = []; 
+let playerScore = parseInt(localStorage.getItem('memory_playerScore')) || 0;
+let ayaScore = parseInt(localStorage.getItem('memory_ayaScore')) || 0;
+let isPlayerTurn = localStorage.getItem('memory_isPlayerTurn') === null ? true : localStorage.getItem('memory_isPlayerTurn') === 'true';
+let buffer = JSON.parse(localStorage.getItem('memory_buffer')) || [];
+let firstTile = localStorage.getItem('memory_firstTile') === "null" || localStorage.getItem('memory_firstTile') === null 
+    ? null 
+    : parseInt(localStorage.getItem('memory_firstTile'));
+
+
 const bufferLimit = 6; //Change this to increase or decrease buffer... CHANGE CHANCE LOGIC TO ADAPT IT.
-
-let firstTile = null; //First pick.
-let isPlayerTurn = true; //If false, it's Aya's turn
-let lockBoard = false;
-let playerScore = 0; //1 pair -> 1 score... I don't think I'll need an array.
-let ayaScore = 0;
+let lockBoard = isPlayerTurn ? false : true;
 let turnCounter = 0;
 
 const boardElement = document.getElementById('game-board');
@@ -32,6 +36,15 @@ const turnIndicator = document.getElementById('turn-indicator');
 const rewardIndicator = document.getElementById('reward-indicator');
 const collectionElement = document.querySelectorAll('.collection-grid');
 
+function saveGameState() {
+    localStorage.setItem('memory_boardData', JSON.stringify(boardData));
+    localStorage.setItem('memory_playerScore', playerScore);
+    localStorage.setItem('memory_ayaScore', ayaScore);
+    localStorage.setItem('memory_isPlayerTurn', isPlayerTurn);
+    localStorage.setItem('memory_buffer', JSON.stringify(buffer));
+    localStorage.setItem('memory_firstTile', firstTile);
+    localStorage.setItem('memory_active', 'true');
+}
 
 function startGame() {
     //Maybe some logic to lock into the game?
@@ -39,12 +52,62 @@ function startGame() {
     collectionElement.forEach(c => c.style.visibility = 'visible');
     turnIndicator.style.display = 'block';
     createBoard();
-    pickFirstTurn();
+
+    if(localStorage.getItem('memory_active')){
+        statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
+        rebuildCollections(); 
+        
+        if (!isPlayerTurn) {
+            if (firstTile !== null) {
+                console.log("-- Aya resumes her second pick");
+                setTimeout(ayaResumeSecondPick, 1200);
+            } else {
+                setTimeout(ayaTurn, 1200);
+            }
+        }
+    } else {
+        pickFirstTurn();
+        saveGameState();
+    }
+}
+
+function ayaResumeSecondPick() {
+    if (isPlayerTurn) return;
+    
+    const match = scoutBuffer();
+    // Check if EITHER card in the remembered match is the one currently on the board
+    if (match != null && (match.idA == firstTile || match.idB == firstTile)) {
+        const pick = (match.idA == firstTile) ? match.idB : match.idA;
+        console.log("-- Aya remembers the pair for the resumed card!");
+        ayaFlip(pick);
+    } else {
+        console.log("-- Aya doesn't remember a match for this card, picking random second.");
+        pickRandomSecond(firstTile);
+    }
+}
+
+function rebuildCollections() {
+    const matchedTiles = boardData.filter(t => t.state === 2);
+    
+    let ayaRecovered = 0;
+    let playerRecovered = 0;
+
+    const uniqueSymbols = [...new Set(matchedTiles.map(t => t.symbol))];
+    
+    uniqueSymbols.forEach(symbol => {
+        if (ayaRecovered < ayaScore) {
+            collectTile(symbol, 'aya-tiles');
+            ayaRecovered++;
+        } else {
+            collectTile(symbol, 'player-tiles');
+            playerRecovered++;
+        }
+    });
 }
 
 function rewardRoll(){
     //Reward Logic goes here
-    let reward_name = "five thousand lost eggs";
+    let reward_name = "a kiss on the forehead";
     //--
     if(playerScore > ayaScore){
         rewardIndicator.innerText = `You got: ${reward_name}`;
@@ -62,6 +125,9 @@ function createBoard() {
         const tileDiv = document.createElement('div');
         tileDiv.classList.add('tile');
         tileDiv.dataset.id = tile.id;
+
+        if (tile.state === 1) tileDiv.classList.add('flip');
+        if (tile.state === 2) tileDiv.classList.add('matched');
         
         tileDiv.addEventListener('click', () => onTileClick(tile.id)); 
         
@@ -105,6 +171,7 @@ function flip(id) {
     const tileElement = document.querySelector(`[data-id="${id}"]`);
     tileElement.classList.add('flip');
     boardData[id].state = 1;
+    saveGameState();
 
     updateBuffer(id, boardData[id].symbol);
 
@@ -142,6 +209,7 @@ function checkMatch(secondTile) {
 
             const winnerZoneId = isPlayerTurn ? 'player-tiles' : 'aya-tiles';
             collectTile(first.symbol, winnerZoneId);
+            saveGameState();
 
             buffer = buffer.filter(c => c.symbol !== first.symbol);
             buffer.pop(); //Maybe?¿?¿?¿?¿?¿?¿?¿?¿ I should add buffer position tracking to the debugger.
@@ -163,6 +231,7 @@ function nextTurn(gotPair) {
     if (boardData.every(c => c.state === 2)) {
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
         rewardRoll();
+        localStorage.clear();
         return;
     }
     firstTile = null;
@@ -171,6 +240,7 @@ function nextTurn(gotPair) {
         console.log(`--Increasing turn counter! (${turnCounter})`);
     }else{
         isPlayerTurn = !isPlayerTurn;
+        saveGameState();
         turnCounter = 0;
     }
     lockBoard = false;
@@ -181,7 +251,7 @@ function nextTurn(gotPair) {
 //------- AYA'S LOGIC ----------
 
 function ayaTurn() {
-    if (isPlayerTurn) return;
+    if (isPlayerTurn || firstTile !== null) return;
 
     const matchInBuffer = scoutBuffer();
 
@@ -196,8 +266,6 @@ function ayaTurn() {
         console.log(`--Aya picked a random first!`);
 
         setTimeout(() => {
-
-            if (lockBoard) return;
 
             const secondMatch = scoutBuffer();
             if (secondMatch != null && secondMatch.idA == firstPick) {
@@ -252,6 +320,7 @@ function ayaFlip(id) {
     tileElement.classList.add('flip');
     boardData[id].state = 1;
     updateBuffer(id, boardData[id].symbol);
+    saveGameState();
     if (firstTile == null) { 
         firstTile = id; 
     } else { 
