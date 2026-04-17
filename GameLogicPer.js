@@ -11,6 +11,12 @@ const icons = [
     'EyeOutline.png', 'EyeBlack.png', 'EyeRed.png',
     'EggOutline.png', 'EggBlack.png', 'EggRed.png'
 ];
+const song = new Audio('Pieces/Loop_Rejoicing.wav');
+song.volume = 0.05;
+// https://opengameart.org/content/medieval-rejoicing
+const tileFlipSound = new Audio('Pieces/TileFlip1.wav');
+tileFlipSound.volume = 0.2;
+// https://freesound.org/people/poenia/sounds/745030/
 
 const vault = decryptState(localStorage.getItem(vault_param));
 let boardData;
@@ -59,6 +65,8 @@ function startGame() {
     collectionElement.forEach(c => c.style.visibility = 'visible');
     turnIndicator.style.display = 'block';
     createBoard();
+    song.loop = true;
+    song.play();
 
 if(localStorage.getItem(active_param)){
         statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
@@ -197,6 +205,7 @@ function onTileClick(id) {
 
 function flip(id) {
     const tileElement = document.querySelector(`[data-id="${id}"]`);
+    tileFlipSound.play();
     tileElement.classList.add('flip');
     boardData[id].state = 1;
 
@@ -255,6 +264,7 @@ function nextTurn(gotPair) {
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
         rewardRoll();
         localStorage.clear();
+        song.pause();
         return;
     }
     firstTile = null;
@@ -341,6 +351,7 @@ function pickRandomSecond(excludeId) {
 function ayaFlip(id) {
     const tileElement = document.querySelector(`[data-id="${id}"]`);
     tileElement.classList.add('flip');
+    tileFlipSound.play();
     boardData[id].state = 1;
     updateBuffer(id, boardData[id].symbol);
     if (firstTile == null) { 
