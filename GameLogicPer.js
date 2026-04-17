@@ -2,7 +2,6 @@
 
 //Notes to self:
 // state --> 0 = face down, 1 = face up, 2 = matched
-// buffer keeps track of the last 4 flipped tiles... 
 
 const icons = [
     'PawOutline.png', 'PawBlack.png', 'PawRed.png',
@@ -11,22 +10,25 @@ const icons = [
     'EggOutline.png', 'EggBlack.png', 'EggRed.png'
 ];
 
-let savedBoard = JSON.parse(localStorage.getItem('memory_boardData'));
-let deck = savedBoard ? [] : [...icons, ...icons].sort(() => Math.random() - 0.5);
-let boardData = savedBoard || deck.map((symbol, id) => ({ id, symbol, state: 0 }));
+const vault = decryptState(localStorage.getItem('memory_vault'));
+let boardData;
+if(vault && vault.boardData){
+    boardData = vault.boardData;
+}else{
+    let deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
+    boardData = deck.map((symbol, id) => ({ id, symbol, state: 0 }));
+}
 
-let playerScore = parseInt(localStorage.getItem('memory_playerScore')) || 0;
-let ayaScore = parseInt(localStorage.getItem('memory_ayaScore')) || 0;
-let isPlayerTurn = localStorage.getItem('memory_isPlayerTurn') === null ? true : localStorage.getItem('memory_isPlayerTurn') === 'true';
-let buffer = JSON.parse(localStorage.getItem('memory_buffer')) || [];
-let firstTile = localStorage.getItem('memory_firstTile') === "null" || localStorage.getItem('memory_firstTile') === null 
-    ? null 
-    : parseInt(localStorage.getItem('memory_firstTile'));
+let playerScore = vault ? vault.playerScore : 0;
+let ayaScore = vault ? vault.ayaScore : 0;
+let isPlayerTurn = vault ? vault.isPlayerTurn : true;
+let buffer = vault ? vault.buffer : [];
+let firstTile = vault ? vault.firstTile : null;
+let turnCounter = vault ? vault.turnCounter : 0;
 
 
 const bufferLimit = 6; //Change this to increase or decrease buffer... CHANGE CHANCE LOGIC TO ADAPT IT.
 let lockBoard = isPlayerTurn ? false : true;
-let turnCounter = 0;
 
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('turn-indicator');
@@ -37,29 +39,41 @@ const rewardIndicator = document.getElementById('reward-indicator');
 const collectionElement = document.querySelectorAll('.collection-grid');
 
 function saveGameState() {
-    localStorage.setItem('memory_boardData', JSON.stringify(boardData));
-    localStorage.setItem('memory_playerScore', playerScore);
-    localStorage.setItem('memory_ayaScore', ayaScore);
-    localStorage.setItem('memory_isPlayerTurn', isPlayerTurn);
-    localStorage.setItem('memory_buffer', JSON.stringify(buffer));
-    localStorage.setItem('memory_firstTile', firstTile);
+    const fullState = {
+        boardData,
+        playerScore,
+        ayaScore,
+        isPlayerTurn,
+        buffer,
+        firstTile,
+        turnCounter
+    };
+    
+    localStorage.setItem('memory_vault', encryptState(fullState));
     localStorage.setItem('memory_active', 'true');
 }
 
 function startGame() {
-    //Maybe some logic to lock into the game?
     menuElement.classList.add('hidden');
     collectionElement.forEach(c => c.style.visibility = 'visible');
     turnIndicator.style.display = 'block';
     createBoard();
 
-    if(localStorage.getItem('memory_active')){
+if(localStorage.getItem('memory_active')){
         statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
         rebuildCollections(); 
         
-        if (!isPlayerTurn) {
+        const activeTiles = boardData.filter(t => t.state === 1);
+
+        if (activeTiles.length >= 2) {
+            const secondTile = activeTiles.find(t => t.id !== firstTile);
+            if (secondTile) {
+                lockBoard = true;
+                setTimeout(() => checkMatch(secondTile.id), 1000); 
+            }
+        } 
+        else if (!isPlayerTurn) {
             if (firstTile !== null) {
-                console.log("-- Aya resumes her second pick");
                 setTimeout(ayaResumeSecondPick, 1200);
             } else {
                 setTimeout(ayaTurn, 1200);
@@ -75,7 +89,6 @@ function ayaResumeSecondPick() {
     if (isPlayerTurn) return;
     
     const match = scoutBuffer();
-    // Check if EITHER card in the remembered match is the one currently on the board
     if (match != null && (match.idA == firstTile || match.idB == firstTile)) {
         const pick = (match.idA == firstTile) ? match.idB : match.idA;
         console.log("-- Aya remembers the pair for the resumed card!");
@@ -105,10 +118,25 @@ function rebuildCollections() {
     });
 }
 
+function encryptState(data) {
+    const jsonString = JSON.stringify(data);
+    return btoa(jsonString).split('').reverse().join('');
+}
+
+function decryptState(scrambled) {
+    try {
+        if (!scrambled) return null;
+        const reversed = scrambled.split('').reverse().join('');
+        return JSON.parse(atob(reversed));
+    } catch (e) {
+        return null;
+    }
+}
+
 function rewardRoll(){
-    //Reward Logic goes here
+    //------ Reward Logic goes here (?) ------
     let reward_name = "a kiss on the forehead";
-    //--
+    //-----------------------------------------
     if(playerScore > ayaScore){
         rewardIndicator.innerText = `You got: ${reward_name}`;
     }else if(playerScore == ayaScore){
@@ -171,7 +199,6 @@ function flip(id) {
     const tileElement = document.querySelector(`[data-id="${id}"]`);
     tileElement.classList.add('flip');
     boardData[id].state = 1;
-    saveGameState();
 
     updateBuffer(id, boardData[id].symbol);
 
@@ -181,6 +208,7 @@ function flip(id) {
         checkMatch(id);
     }
     console.log(firstTile)
+    saveGameState();
 }
 
 function updateBuffer(id, symbol) {
@@ -295,7 +323,7 @@ function scoutBuffer(){
     }
 
     if(closest > 0 ){
-        chance = chance + 20; //Reduces the chances to match if the tile wasn't just picked. 
+        chance = chance + 15; //Reduces the chances to match if the tile wasn't just picked. 
         console.log(`-- Reduced!`)
     } 
     if(idA != null && idB != null){
@@ -320,12 +348,10 @@ function ayaFlip(id) {
     tileElement.classList.add('flip');
     boardData[id].state = 1;
     updateBuffer(id, boardData[id].symbol);
-    saveGameState();
     if (firstTile == null) { 
         firstTile = id; 
     } else { 
         checkMatch(id); 
     }
+    saveGameState();
 }
-
-//startGame();
