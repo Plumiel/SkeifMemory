@@ -3,6 +3,8 @@
 //Notes to self:
 // state --> 0 = face down, 1 = face up, 2 = matched
 
+const vault_param = 'tavern_vault';
+const active_param = 'tavern_active';
 const icons = [
     'PawOutline.png', 'PawBlack.png', 'PawRed.png',
     'StarOutline.png', 'StarBlack.png', 'StarRed.png',
@@ -10,7 +12,7 @@ const icons = [
     'EggOutline.png', 'EggBlack.png', 'EggRed.png'
 ];
 
-const vault = decryptState(localStorage.getItem('memory_vault'));
+const vault = decryptState(localStorage.getItem(vault_param));
 let boardData;
 if(vault && vault.boardData){
     boardData = vault.boardData;
@@ -32,7 +34,6 @@ let lockBoard = isPlayerTurn ? false : true;
 
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('turn-indicator');
-const memoryElement = document.getElementById('buffer-display'); //debug, kill this
 const menuElement = document.getElementById('menu-zone');
 const turnIndicator = document.getElementById('turn-indicator');
 const rewardIndicator = document.getElementById('reward-indicator');
@@ -49,8 +50,8 @@ function saveGameState() {
         turnCounter
     };
     
-    localStorage.setItem('memory_vault', encryptState(fullState));
-    localStorage.setItem('memory_active', 'true');
+    localStorage.setItem(vault_param, encryptState(fullState));
+    localStorage.setItem(active_param, 'true');
 }
 
 function startGame() {
@@ -59,7 +60,7 @@ function startGame() {
     turnIndicator.style.display = 'block';
     createBoard();
 
-if(localStorage.getItem('memory_active')){
+if(localStorage.getItem(active_param)){
         statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
         rebuildCollections(); 
         
@@ -91,10 +92,8 @@ function ayaResumeSecondPick() {
     const match = scoutBuffer();
     if (match != null && (match.idA == firstTile || match.idB == firstTile)) {
         const pick = (match.idA == firstTile) ? match.idB : match.idA;
-        console.log("-- Aya remembers the pair for the resumed card!");
         ayaFlip(pick);
     } else {
-        console.log("-- Aya doesn't remember a match for this card, picking random second.");
         pickRandomSecond(firstTile);
     }
 }
@@ -135,12 +134,13 @@ function decryptState(scrambled) {
 
 function rewardRoll(){
     //------ Reward Logic goes here (?) ------
-    let reward_name = "a kiss on the forehead";
+    let reward1_name = "one TRILLION lost eggs";
+    let reward2_name = "one THOUSAND lost eggs";
     //-----------------------------------------
     if(playerScore > ayaScore){
-        rewardIndicator.innerText = `You got: ${reward_name}`;
+        rewardIndicator.innerText = `You got: ${reward1_name} !`;
     }else if(playerScore == ayaScore){
-        rewardIndicator.innerText = `You got: ${reward_name}`;
+        rewardIndicator.innerText = `You got: ${reward2_name} !`;
     }
     rewardIndicator.style.display = 'block';
 
@@ -216,11 +216,6 @@ function updateBuffer(id, symbol) {
         buffer.unshift({ id, symbol });
         if (buffer.length > bufferLimit) buffer.pop();
     }
-    viewBuffer();
-}
-
-function viewBuffer() {
-    memoryElement.innerText = `Memory: ${buffer.map(i => `${i.symbol} (#${i.id})`).join(' | ')}`;
 }
 
 function checkMatch(secondTile) {

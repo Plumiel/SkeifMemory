@@ -26,7 +26,6 @@ let turnCounter = 0;
 
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('turn-indicator');
-const memoryElement = document.getElementById('buffer-display'); //debug, kill this
 const menuElement = document.getElementById('menu-zone');
 const turnIndicator = document.getElementById('turn-indicator');
 const rewardIndicator = document.getElementById('reward-indicator');
@@ -44,12 +43,13 @@ function startGame() {
 
 function rewardRoll(){
     //Reward Logic goes here
-    let reward_name = "five thousand lost eggs";
+    let reward1_name = "one TRILLION lost eggs";
+    let reward2_name = "one THOUSAND lost eggs";
     //--
     if(playerScore > ayaScore){
-        rewardIndicator.innerText = `You got: ${reward_name}`;
+        rewardIndicator.innerText = `You got: ${reward1_name}`;
     }else if(playerScore == ayaScore){
-        rewardIndicator.innerText = `You got: ${reward_name}`;
+        rewardIndicator.innerText = `You got: ${reward2_name}`;
     }
     rewardIndicator.style.display = 'block';
 
@@ -121,11 +121,6 @@ function updateBuffer(id, symbol) {
         buffer.unshift({ id, symbol });
         if (buffer.length > bufferLimit) buffer.pop();
     }
-    viewBuffer();
-}
-
-function viewBuffer() {
-    memoryElement.innerText = `Memory: ${buffer.map(i => `${i.symbol} (#${i.id})`).join(' | ')}`;
 }
 
 function checkMatch(secondTile) {
