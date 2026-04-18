@@ -3,6 +3,8 @@
 //Notes to self:
 // state --> 0 = face down, 1 = face up, 2 = matched
 
+import { loadPictures, changeExpression } from "./NPCHandler.js";
+
 const vault_param = 'tavern_vault';
 const active_param = 'tavern_active';
 const icons = [
@@ -64,6 +66,7 @@ function startGame() {
     menuElement.classList.add('hidden');
     collectionElement.forEach(c => c.style.visibility = 'visible');
     turnIndicator.style.display = 'block';
+    loadPictures();
     createBoard();
     song.loop = true;
     song.play();
@@ -267,6 +270,15 @@ function nextTurn(gotPair) {
         song.pause();
         return;
     }
+
+    if(playerScore > ayaScore){
+        changeExpression("angry");
+        console.log(`--Changed expression to angry!`);
+    }else{
+        changeExpression("happy");
+
+    }
+    console.log(`Player Score: ${playerScore} | Aya Score: ${ayaScore}`);
     firstTile = null;
     if (gotPair && turnCounter < 1) { 
         turnCounter++;
@@ -276,6 +288,7 @@ function nextTurn(gotPair) {
         saveGameState();
         turnCounter = 0;
     }
+
     lockBoard = false;
     statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
     if (!isPlayerTurn) setTimeout(ayaTurn, 1000);
@@ -361,3 +374,5 @@ function ayaFlip(id) {
     }
     saveGameState();
 }
+
+document.getElementById('start-game').addEventListener('click', startGame);

@@ -83,24 +83,30 @@ body {
     text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
 }
 
-.game-grounds::before{
-    content: "";
+.npc-zone {
     position: absolute;
-    top: -200px;
-    left: -400px;
+    top: -226px;
+    left: -350px;
     width: 70%;
     height: 70%;
     background: rgba(255, 255, 255, 0);
     border-radius: 12px;
     pointer-events: none;
-    background-image: url("Pieces/TheRock.png");
     background-repeat: no-repeat;
     background-position: right;
     background-size: contain;
     z-index: -1;
-    display: none;
 }
 
+#npc-under {
+    z-index: -1;
+    background-image: none;
+}
+
+#npc-over {
+    z-index: 2;
+    background-image: none;
+}
 
 /* Pieces grid */
 .memory-game { 
@@ -254,7 +260,17 @@ grid-template-columns: repeat(6, min(65px, 14vw));
         gap: 15px;
         padding-top: 50px;
         width: 100%;
+        position: relative;
     }
+
+    .npc-zone {
+        top: -126px; 
+        left: 20%;
+        transform: translateX(-50%);
+        width: 280px; 
+        height: 160px;
+    }
+
     .memory-game { 
         grid-template-columns: repeat(6, 1fr); 
         grid-gap: 2%px; 
