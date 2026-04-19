@@ -267,6 +267,7 @@ function nextTurn(gotPair) {
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
         rewardRoll();
         localStorage.clear();
+        changeExpression("defeat");
         song.pause();
         return;
     }
@@ -278,6 +279,7 @@ function nextTurn(gotPair) {
         changeExpression("happy");
 
     }
+
     console.log(`Player Score: ${playerScore} | Aya Score: ${ayaScore}`);
     firstTile = null;
     if (gotPair && turnCounter < 1) { 
