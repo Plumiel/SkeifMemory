@@ -255,6 +255,10 @@ function nextTurn(gotPair) {
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
         rewardRoll();
         localStorage.clear();
+        if(playerScore > ayaScore) changeExpression("defeat");
+        if(playerScore < ayaScore) changeExpression("win");
+        song.pause();
+        document.getElementById("restart-game").style.display = 'block';
         return;
     }
     firstTile = null;
@@ -350,3 +354,8 @@ function ayaFlip(id) {
     }
     saveGameState();
 }
+
+document.getElementById('start-game').addEventListener('click', startGame);
+document.getElementById('restart-game').addEventListener('click', () => {
+    location.reload();
+});
