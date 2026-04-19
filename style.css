@@ -127,6 +127,10 @@ grid-template-columns: repeat(6, min(65px, 14vw));
     z-index: 1; 
 }
 
+#restart-game{
+    position: absolute;
+}
+
 .tile-front, .tile-back { 
     width: 100%;
     height: 100%;
@@ -258,7 +262,7 @@ grid-template-columns: repeat(6, min(65px, 14vw));
     .game-grounds {
         padding: 20px 10px;
         flex-direction: column; 
-        gap: 15px;
+        gap: 10px;
         padding-top: 50px;
         width: 100%;
         position: relative;
@@ -274,7 +278,7 @@ grid-template-columns: repeat(6, min(65px, 14vw));
 
     .memory-game { 
         grid-template-columns: repeat(6, 1fr); 
-        grid-gap: 2%px; 
+        grid-gap: 2%; 
         width: 100%;
         max-width: 450px;
         justify-content: center;
@@ -288,19 +292,38 @@ grid-template-columns: repeat(6, min(65px, 14vw));
 
     .collection-grid {
         width: 100%;
-        max-width: 450px;
+        max-width: 100%;
+        margin: 0 auto;
+        gap: 0;
 
-        grid-template-columns: repeat(6, 1fr); 
+        display: grid;
+        grid-template-columns: repeat(12, 1fr); 
         height: auto;
-        aspect-ratio: 6 / 2;
+        aspect-ratio: 12 / 1;
 
-        background-size: 16.66% auto;
-        background-repeat: repeat;
+       background-image: url("data:image/svg+xml,%3Csvg width='50' height='50' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='2' y='2' width='46' height='46' fill='none' stroke='%23b09670' stroke-width='2' stroke-dasharray='5,3' rx='6'/%3E%3C/svg%3E");
+        background-size: calc(100% / 12) 100%; 
+        background-position: 0 0; /* 4. Start exactly at the pixel-zero */
+        background-repeat: repeat-x;
+      
     }
+
+    .score-zone{
+        width: auto;
+        padding: 5px;
+    }
+
     .collection-tile {
         width: 100%;
         height: auto;
         aspect-ratio: 1 / 1;
+
+        top:-18%;
+        padding-bottom: 15%;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     #aya-collection, #player-collection {
@@ -308,8 +331,27 @@ grid-template-columns: repeat(6, min(65px, 14vw));
         width: 100%;
     }
 
+    #player-collection{
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    #aya-collection{
+        margin-top: -15px;
+        margin-bottom: 20px;
+    }
+
     #reward-indicator {
-        top: 50%; 
+        top: 42%; 
+    }
+
+    #restart-game {
+        display: none; 
+        top: 55%; 
+        left: 50%;
+        transform: translate(-50%, -50%);
+    
+        z-index: 20; 
     }
 }
 
