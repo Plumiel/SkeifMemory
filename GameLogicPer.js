@@ -13,10 +13,10 @@ const icons = [
     'EyeOutline.png', 'EyeBlack.png', 'EyeRed.png',
     'EggOutline.png', 'EggBlack.png', 'EggRed.png'
 ];
-const song = new Audio('Pieces/Loop_Rejoicing.wav');
+const song = new Audio('./Pieces/Loop_Rejoicing.wav');
 song.volume = 0.05;
 // https://opengameart.org/content/medieval-rejoicing
-const tileFlipSound = new Audio('Pieces/TileFlip1.wav');
+const tileFlipSound = new Audio('./Pieces/TileFlip1.wav');
 tileFlipSound.volume = 0.2;
 // https://freesound.org/people/poenia/sounds/745030/
 
@@ -172,11 +172,11 @@ function createBoard() {
         
         tileDiv.innerHTML = `
             <div class="tile-front">
-                <img src="Pieces/FrontPiece.png" class="tile-layer base-layer">
-                <img src="Pieces/${tile.symbol}" class="symbol-img"> 
+                <img src="./Pieces/FrontPiece.png" class="tile-layer base-layer">
+                <img src="./Pieces/${tile.symbol}" class="symbol-img"> 
             </div>
             <div class="tile-back">
-                <img src="Pieces/BackPiece.png" class="tile-layer">
+                <img src="./Pieces/BackPiece.png" class="tile-layer">
             </div>`;
         boardElement.appendChild(tileDiv);
     });
@@ -194,8 +194,8 @@ function collectTile(symbol, zoneId) {
     collectionTile.classList.add('collection-tile');
     
     collectionTile.innerHTML = `
-        <img src="Pieces/FrontPiece.png" class="tile-layer base-layer">
-        <img src="Pieces/${symbol}" class="symbol-img">`; 
+        <img src="./Pieces/FrontPiece.png" class="tile-layer base-layer">
+        <img src="./Pieces/${symbol}" class="symbol-img">`; 
     zone.appendChild(collectionTile);
 }
 
@@ -267,7 +267,8 @@ function nextTurn(gotPair) {
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
         rewardRoll();
         localStorage.clear();
-        changeExpression("defeat");
+        if(playerScore > ayaScore) changeExpression("defeat");
+        if(playerScore < ayaScore) changeExpression("win");
         song.pause();
         return;
     }
