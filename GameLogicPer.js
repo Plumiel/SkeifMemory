@@ -3,6 +3,8 @@
 //Notes to self:
 // state --> 0 = face down, 1 = face up, 2 = matched
 
+import { loadPictures, changeExpression } from "./NPCHandler.js";
+
 const vault_param = 'tavern_vault';
 const active_param = 'tavern_active';
 const icons = [
@@ -11,6 +13,12 @@ const icons = [
     'EyeOutline.png', 'EyeBlack.png', 'EyeRed.png',
     'EggOutline.png', 'EggBlack.png', 'EggRed.png'
 ];
+const song = new Audio('./Pieces/Loop_Rejoicing.wav');
+song.volume = 0.05;
+// https://opengameart.org/content/medieval-rejoicing
+const tileFlipSound = new Audio('./Pieces/TileFlip1.wav');
+tileFlipSound.volume = 0.2;
+// https://freesound.org/people/poenia/sounds/745030/
 
 const vault = decryptState(localStorage.getItem(vault_param));
 let boardData;
@@ -58,7 +66,10 @@ function startGame() {
     menuElement.classList.add('hidden');
     collectionElement.forEach(c => c.style.visibility = 'visible');
     turnIndicator.style.display = 'block';
+    loadPictures();
     createBoard();
+    song.loop = true;
+    song.play();
 
 if(localStorage.getItem(active_param)){
         statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
@@ -161,11 +172,11 @@ function createBoard() {
         
         tileDiv.innerHTML = `
             <div class="tile-front">
-                <img src="Pieces/FrontPiece.png" class="tile-layer base-layer">
-                <img src="Pieces/${tile.symbol}" class="symbol-img"> 
+                <img src="./Pieces/FrontPiece.png" class="tile-layer base-layer">
+                <img src="./Pieces/${tile.symbol}" class="symbol-img"> 
             </div>
             <div class="tile-back">
-                <img src="Pieces/BackPiece.png" class="tile-layer">
+                <img src="./Pieces/BackPiece.png" class="tile-layer">
             </div>`;
         boardElement.appendChild(tileDiv);
     });
@@ -183,8 +194,8 @@ function collectTile(symbol, zoneId) {
     collectionTile.classList.add('collection-tile');
     
     collectionTile.innerHTML = `
-        <img src="Pieces/FrontPiece.png" class="tile-layer base-layer">
-        <img src="Pieces/${symbol}" class="symbol-img">`; 
+        <img src="./Pieces/FrontPiece.png" class="tile-layer base-layer">
+        <img src="./Pieces/${symbol}" class="symbol-img">`; 
     zone.appendChild(collectionTile);
 }
 
@@ -197,6 +208,7 @@ function onTileClick(id) {
 
 function flip(id) {
     const tileElement = document.querySelector(`[data-id="${id}"]`);
+    tileFlipSound.play();
     tileElement.classList.add('flip');
     boardData[id].state = 1;
 
@@ -261,6 +273,16 @@ function nextTurn(gotPair) {
         document.getElementById("restart-game").style.display = 'block';
         return;
     }
+
+    if(playerScore > ayaScore){
+        changeExpression("angry");
+        console.log(`--Changed expression to angry!`);
+    }else{
+        changeExpression("happy");
+
+    }
+
+    console.log(`Player Score: ${playerScore} | Aya Score: ${ayaScore}`);
     firstTile = null;
     if (gotPair && turnCounter < 1) { 
         turnCounter++;
@@ -270,6 +292,7 @@ function nextTurn(gotPair) {
         saveGameState();
         turnCounter = 0;
     }
+
     lockBoard = false;
     statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
     if (!isPlayerTurn) setTimeout(ayaTurn, 1000);
@@ -345,6 +368,7 @@ function pickRandomSecond(excludeId) {
 function ayaFlip(id) {
     const tileElement = document.querySelector(`[data-id="${id}"]`);
     tileElement.classList.add('flip');
+    tileFlipSound.play();
     boardData[id].state = 1;
     updateBuffer(id, boardData[id].symbol);
     if (firstTile == null) { 

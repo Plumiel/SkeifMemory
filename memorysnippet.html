@@ -11,13 +11,17 @@
     <div class="game-grounds">
             <div id="turn-indicator">Your Turn!</div>
             <div id="reward-indicator"></div>
+
+            <div class="npc-zone" id="npc-under"></div>
+            <div class="npc-zone" id="npc-over"></div>
+
             <div class="score-zone" id="aya-collection">
                 <div class="collection-grid" id="aya-tiles"></div>
             </div>
 
             <div id="menu-zone">
                 <p>Welcome to the tavern! Care to play a little game?</p>
-                <button id="start-game" class="btn btn-dark" onclick="startGame()">Let's go</button>
+                <button id="start-game" class="btn btn-dark">Let's go</button>
             </div>
             <button id="restart-game" class="btn btn-dark" style="display: none; position:absolute; z-index: 20;">Restart Game</button>
 
@@ -28,6 +32,6 @@
             </div>
     </div>
 
-    <script src="GameLogicPer.js"></script>
+    <script src="GameLogicPer.js" type="module"></script>
 </body>
 </html>
