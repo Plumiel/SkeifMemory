@@ -129,6 +129,7 @@ grid-template-columns: repeat(6, min(65px, 14vw));
 
 #restart-game{
     position: absolute;
+    display: none;
 }
 
 .tile-front, .tile-back { 
@@ -354,4 +355,3 @@ grid-template-columns: repeat(6, min(65px, 14vw));
         z-index: 20; 
     }
 }
-

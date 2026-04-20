@@ -22,7 +22,7 @@ tileFlipSound.volume = 0.2;
 
 const vault = decryptState(localStorage.getItem(vault_param));
 let boardData;
-if(vault && vault.boardData){
+if(vault && vault.boardData && validateGameState(vault)){
     boardData = vault.boardData;
 }else{
     let deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
@@ -47,8 +47,9 @@ const turnIndicator = document.getElementById('turn-indicator');
 const rewardIndicator = document.getElementById('reward-indicator');
 const collectionElement = document.querySelectorAll('.collection-grid');
 
-function saveGameState() {
-    const fullState = {
+function getGameState(){
+    let checksum = 0; 
+    const state = {
         boardData,
         playerScore,
         ayaScore,
@@ -57,8 +58,56 @@ function saveGameState() {
         firstTile,
         turnCounter
     };
-    
-    localStorage.setItem(vault_param, encryptState(fullState));
+    const fullState = {
+        boardData,
+        playerScore,
+        ayaScore,
+        isPlayerTurn,
+        buffer,
+        firstTile,
+        turnCounter,
+        checksum
+    };
+
+    let checksumState = encryptState(state); //This is just to generate the checksum, it doesn't need to be stored.
+    fullState.checksum = crc32(checksumState); 
+
+    return fullState;
+}
+
+function crc32(str) {
+    let crc = 0 ^ (-1);
+    for (let i = 0; i < str.length; i++) {
+        let y = (crc ^ str.charCodeAt(i)) & 0xFF;
+        for (let j = 0; j < 8; j++) {
+        y = (y >>> 1) ^ (y & 1 ? 0xEDB88320 : 0);
+        }
+        crc = (crc >>> 8) ^ y;
+    }
+    return (crc ^ (-1)) >>> 0;
+}
+
+function validateGameState(state){
+    console.log("Validating game state...");
+    if(!state) return false;
+    console.log("State found, checking structure...");
+    if(!state.checksum) return false;
+    console.log("Checksum found, verifying integrity...");
+
+    // Create copy of state without checksum for validation
+    const { checksum, ...stateWithoutChecksum } = state;
+    const recalculatedChecksum = crc32(encryptState(stateWithoutChecksum));
+
+    if(recalculatedChecksum !== state.checksum) {
+        console.warn("Checksum mismatch! Possible tampering detected.");
+    }else{
+        console.log("Checksum valid. Game state integrity verified.");
+    }
+    return recalculatedChecksum === state.checksum;
+}
+
+function saveGameState() {
+    localStorage.setItem(vault_param, encryptState(getGameState()));
     localStorage.setItem(active_param, 'true');
 }
 
