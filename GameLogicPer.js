@@ -1,12 +1,13 @@
-// GameLogic.js - I just cooked some buuullshit
-
+// GameLogic.js - handles all of the game logic.
 //Notes to self:
 // state --> 0 = face down, 1 = face up, 2 = matched
 
 import { loadPictures, changeExpression } from "./NPCHandler.js";
 
+//Persistence ------------------------
 const vault_param = 'tavern_vault';
-const active_param = 'tavern_active';
+//------------------------------------
+
 const icons = [
     'PawOutline.png', 'PawBlack.png', 'PawRed.png',
     'StarOutline.png', 'StarBlack.png', 'StarRed.png',
@@ -20,24 +21,30 @@ const tileFlipSound = new Audio('./Pieces/TileFlip1.wav');
 tileFlipSound.volume = 0.2;
 // https://freesound.org/people/poenia/sounds/745030/
 
+//Persistence ------------------------
 const vault = decryptState(localStorage.getItem(vault_param));
 let boardData;
 if(vault && vault.boardData && validateGameState(vault)){
+    //If there's a vault in local storage and it's not tampered with, load the board.
     boardData = vault.boardData;
 }else{
+    //Start a random board if no valid vault is found
     let deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
     boardData = deck.map((symbol, id) => ({ id, symbol, state: 0 }));
 }
+//------------------------------------
 
+//Persistence , load established values if found -------------
 let playerScore = vault ? vault.playerScore : 0;
 let ayaScore = vault ? vault.ayaScore : 0;
 let isPlayerTurn = vault ? vault.isPlayerTurn : true;
 let buffer = vault ? vault.buffer : [];
 let firstTile = vault ? vault.firstTile : null;
 let turnCounter = vault ? vault.turnCounter : 0;
+//------------------------------------------------------------
 
 
-const bufferLimit = 9; //Change this to increase or decrease buffer... CHANGE CHANCE LOGIC TO ADAPT IT.
+const bufferLimit = 9; 
 const buffInc = 85/(bufferLimit-1); 
 let lockBoard = isPlayerTurn ? false : true;
 
@@ -48,6 +55,8 @@ const turnIndicator = document.getElementById('turn-indicator');
 const rewardIndicator = document.getElementById('reward-indicator');
 const collectionElement = document.querySelectorAll('.collection-grid');
 
+// Persistence functions ------------------------
+//Saves the current game with encryption
 function getGameState(){
     let checksum = 0; 
     const state = {
@@ -76,6 +85,11 @@ function getGameState(){
     return fullState;
 }
 
+function saveGameState() {
+    localStorage.setItem(vault_param, encryptState(getGameState()));
+}
+
+// Integrity check
 function crc32(str) {
     let crc = 0 ^ (-1);
     for (let i = 0; i < str.length; i++) {
@@ -106,12 +120,10 @@ function validateGameState(state){
     }
     return recalculatedChecksum === state.checksum;
 }
+//------------------------
 
-function saveGameState() {
-    localStorage.setItem(vault_param, encryptState(getGameState()));
-    localStorage.setItem(active_param, 'true');
-}
 
+//Starts the game! If there's a valid saved state, it recovers it.
 function startGame() {
     menuElement.classList.add('hidden');
     collectionElement.forEach(c => c.style.visibility = 'visible');
@@ -121,7 +133,7 @@ function startGame() {
     song.loop = true;
     song.play();
 
-if(localStorage.getItem(active_param)){
+if(vault && vault.boardData && validateGameState(vault)){
         statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya is thinking...";
         rebuildCollections(); 
         
@@ -146,6 +158,8 @@ if(localStorage.getItem(active_param)){
         saveGameState();
     }
 }
+
+//Persistence ----- Rebuilding methods 
 
 function ayaResumeSecondPick() {
     if (isPlayerTurn) return;
@@ -192,22 +206,9 @@ function decryptState(scrambled) {
         return null;
     }
 }
+//------------------------
 
-function rewardRoll(){
-    //------ Reward Logic goes here (?) ------
-    let reward1_name = "one TRILLION lost eggs";
-    let reward2_name = "one THOUSAND lost eggs";
-    //-----------------------------------------
-    if(playerScore > ayaScore){
-        rewardIndicator.innerText = `You got: ${reward1_name} !`;
-    }else if(playerScore == ayaScore){
-        rewardIndicator.innerText = `You got: ${reward2_name} !`;
-    }
-    rewardIndicator.style.display = 'block';
-
-    return;
-}
-
+//Creates the board!
 function createBoard() {
     boardElement.innerHTML = '';
     boardData.forEach(tile => {
@@ -232,21 +233,11 @@ function createBoard() {
     });
 }
 
+//Random first turn picker.
 function pickFirstTurn() {
     isPlayerTurn = Math.random() < 0.5;
     statusElement.innerText = isPlayerTurn ? "Your Turn!" : "Aya goes first!";
     if (!isPlayerTurn) setTimeout(ayaTurn, 1000);
-}
-
-function collectTile(symbol, zoneId) {
-    const zone = document.getElementById(zoneId);
-    const collectionTile = document.createElement('div');
-    collectionTile.classList.add('collection-tile');
-    
-    collectionTile.innerHTML = `
-        <img src="./Pieces/FrontPiece.png" class="tile-layer base-layer">
-        <img src="./Pieces/${symbol}" class="symbol-img">`; 
-    zone.appendChild(collectionTile);
 }
 
 //------- PLAYER LOGIC ----------
@@ -280,6 +271,9 @@ function updateBuffer(id, symbol) {
     }
 }
 
+//----- MIDDLE GROUND ------
+
+//First tile is outside of functions. You check match with the second tile as parameter
 function checkMatch(secondTile) {
     lockBoard = true;
     const first = boardData[firstTile];
@@ -312,10 +306,12 @@ function checkMatch(secondTile) {
     }
 }
 
+//Checks who is getting the next turn, checks for game end, changes expressions, etc
 function nextTurn(gotPair) {
     if (boardData.every(c => c.state === 2)) {
+        //Start end game sequence
         statusElement.innerText = `Game Over! ${playerScore > ayaScore ? "You win!" : playerScore < ayaScore ? "Aya wins!" : "It's a tie!"}`;
-        rewardRoll();
+        rewardRoll(); //Goes brrr
         localStorage.clear();
         if(playerScore > ayaScore) changeExpression("defeat");
         if(playerScore < ayaScore) changeExpression("win");
@@ -348,26 +344,53 @@ function nextTurn(gotPair) {
     if (!isPlayerTurn) setTimeout(ayaTurn, 1000);
 }
 
+//Where the magic happens
+function rewardRoll(){
+    //------ Reward Logic goes here (?) ------
+    let reward1_name = "one TRILLION lost eggs";
+    let reward2_name = "one THOUSAND lost eggs";
+    //-----------------------------------------
+    if(playerScore > ayaScore){
+        rewardIndicator.innerText = `You got: ${reward1_name} !`;
+    }else if(playerScore == ayaScore){
+        rewardIndicator.innerText = `You got: ${reward2_name} !`;
+    }
+    rewardIndicator.style.display = 'block';
+
+    return;
+}
+
+//Adds a tile to the collection zones. 
+function collectTile(symbol, zoneId) {
+    const zone = document.getElementById(zoneId);
+    const collectionTile = document.createElement('div');
+    collectionTile.classList.add('collection-tile');
+    
+    collectionTile.innerHTML = `
+        <img src="./Pieces/FrontPiece.png" class="tile-layer base-layer">
+        <img src="./Pieces/${symbol}" class="symbol-img">`; 
+    zone.appendChild(collectionTile);
+}
+
 //------- AYA'S LOGIC ----------
 
 function ayaTurn() {
     if (isPlayerTurn || firstTile !== null) return;
 
-    const matchInBuffer = scoutBuffer();
+    const matchInBuffer = scoutBuffer(); //Checks for matches
 
-    //Complete roll
     if (matchInBuffer != null) { 
         ayaFlip(matchInBuffer.idA);
         setTimeout(() => ayaFlip(matchInBuffer.idB), 800);
     } else {
         const randomPicks = boardData.filter(c => c.state == 0).map(c => c.id);
         const firstPick = randomPicks[Math.floor(Math.random() * randomPicks.length)];
-        ayaFlip(firstPick); //No match in buffer, she picks at random.
+        ayaFlip(firstPick); //No match in buffer, picks at random.
         console.log(`--Aya picked a random first!`);
 
         setTimeout(() => {
 
-            const secondMatch = scoutBuffer();
+            const secondMatch = scoutBuffer(); //After the first pick, checks buffer again
             if (secondMatch != null && secondMatch.idA == firstPick) {
                 ayaFlip(secondMatch.idB);
             } else {
@@ -379,6 +402,7 @@ function ayaTurn() {
     }
 }
 
+//Scouts the buffer for a match and returns the IDs if it matches the conditions.
 function scoutBuffer(){
     let idA, idB = null; 
     let closest, farthest = 0;

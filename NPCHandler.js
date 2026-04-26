@@ -1,5 +1,4 @@
-//NPC Handler
-//Handles the NPCs
+//NPC Handler -Handles the NPC images.
 
 //Change name of NPC here.
 const selectedNPC = "Aya";
@@ -9,6 +8,7 @@ let npcOver = document.getElementById("npc-over");
 let folder = `./NPCs/${selectedNPC}/${selectedNPC}`;
 const cache = [];
 
+//If you follow the same naming convention for the images + folder, you can just copy this and paste it for a new NPC.
 const ayaExpressions = [
     "BaseUnder.png", "BaseOver.png", 
     "AngryUnder.png", 
@@ -16,21 +16,22 @@ const ayaExpressions = [
     "Defeat2Under.png", "Defeat2Over.png"
 ];
 
-//If we ever have another NPC, add their expressions to their own array and add change the name below.
+//There's probably better ways to do this... 
+//Preloading images. Unsure if this does anything.
 ayaExpressions.forEach(file => {
     const img = new Image();
     img.src = `${folder}${file}`;
     cache.push(img);
 })
 
-export function loadPictures() {
 
+//Both of the methods below do the expression changes. Load Pictures is the initial load, then changeExpression runs on nextTurn()
+export function loadPictures() {
     npcUnder.style.backgroundImage = `url(${folder}BaseUnder.png)`;
     npcOver.style.backgroundImage = `url(${folder}BaseOver.png)`;    
 }
 
 export function changeExpression(expression) {
-
     switch(expression) {
         case "angry":
             npcUnder.style.backgroundImage = `url(${folder}AngryUnder.png)`;
