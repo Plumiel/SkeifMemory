@@ -37,7 +37,8 @@ let firstTile = vault ? vault.firstTile : null;
 let turnCounter = vault ? vault.turnCounter : 0;
 
 
-const bufferLimit = 6; //Change this to increase or decrease buffer... CHANGE CHANCE LOGIC TO ADAPT IT.
+const bufferLimit = 9; //Change this to increase or decrease buffer... CHANGE CHANCE LOGIC TO ADAPT IT.
+const buffInc = 85/(bufferLimit-1); 
 let lockBoard = isPlayerTurn ? false : true;
 
 const boardElement = document.getElementById('game-board');
@@ -393,13 +394,17 @@ function scoutBuffer(){
         }
     }
 
-    if(closest > 0 ){
-        chance = chance + 15; //Reduces the chances to match if the tile wasn't just picked. 
+    if(closest == 0 && bufferLimit < 7){
+        chance = chance + 10; //Reduces the chances to match if the tile wasn't just picked. 
         console.log(`-- Reduced!`)
     } 
+    if(bufferLimit >= 8){
+        chance = Math.abs(chance - 20); //Increases the chances to match if the buffer is big enough.
+        console.log(`-- Increased!`)
+    }
     if(idA != null && idB != null){
-        console.log(`(Chance: ${chance} | Farthest: ${farthest} | Result: ${100 - (farthest * 15)})`);
-        if(chance <= 100 - (farthest * 15)){ //Ex. If it's on position 5 -> 100 - (5*15) = 25% chance 
+        console.log(`(Chance: ${chance} | Farthest: ${farthest} | Result: ${Math.abs(85 - ((farthest-1) * buffInc))})`);
+        if(chance <= Math.abs(85 - ((farthest-1) * buffInc))){ 
             console.log(`-- Did it!`);
             return { idA, idB };
         }
