@@ -291,7 +291,7 @@ function checkMatch(secondTile) {
             saveGameState();
 
             buffer = buffer.filter(c => c.symbol !== first.symbol);
-            buffer.pop(); //Maybe?¿?¿?¿?¿?¿?¿?¿?¿ I should add buffer position tracking to the debugger.
+            buffer.pop(); 
             if (isPlayerTurn) { playerScore++; } else { ayaScore++; }
             nextTurn(true);
         }, 1000);
@@ -307,6 +307,7 @@ function checkMatch(secondTile) {
 }
 
 //Checks who is getting the next turn, checks for game end, changes expressions, etc
+//if gotPair is true, it means the current player got a pair and gets another true
 function nextTurn(gotPair) {
     if (boardData.every(c => c.state === 2)) {
         //Start end game sequence
