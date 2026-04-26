@@ -103,9 +103,7 @@ function crc32(str) {
 }
 
 function validateGameState(state){
-    console.log("Validating game state...");
     if(!state) return false;
-    console.log("State found, checking structure...");
     if(!state.checksum) return false;
     console.log("Checksum found, verifying integrity...");
 
@@ -159,7 +157,7 @@ if(vault && vault.boardData && validateGameState(vault)){
     }
 }
 
-//Persistence ----- Rebuilding methods 
+//Persistence ----- Rebuilding methods + encrypt..
 
 function ayaResumeSecondPick() {
     if (isPlayerTurn) return;
@@ -173,6 +171,7 @@ function ayaResumeSecondPick() {
     }
 }
 
+//Rebuilds the collections based on saved board state.
 function rebuildCollections() {
     const matchedTiles = boardData.filter(t => t.state === 2);
     
@@ -247,6 +246,7 @@ function onTileClick(id) {
     flip(id);
 }
 
+//Player clicks tile, tile flips, state changes, buffer updates, checks for matches.
 function flip(id) {
     const tileElement = document.querySelector(`[data-id="${id}"]`);
     tileFlipSound.play();
