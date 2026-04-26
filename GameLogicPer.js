@@ -419,12 +419,12 @@ function scoutBuffer(){
         }
     }
 
-    if(closest == 0 && bufferLimit < 7){
+    if(closest != 0){
         chance = chance + 10; //Reduces the chances to match if the tile wasn't just picked. 
         console.log(`-- Reduced!`)
     } 
     if(bufferLimit >= 8){
-        chance = Math.abs(chance - 20); //Increases the chances to match if the buffer is big enough.
+        chance = Math.abs(chance - 20); //Increases the chances to match if the buffer is big enough (difficulty?)
         console.log(`-- Increased!`)
     }
     if(idA != null && idB != null){
